@@ -253,6 +253,10 @@ bool RLLgmnMouse::InitializeRLLGMN(void)
 //-----------------------------------------
 bool RLLgmnMouse::InitializeRLLGMNLearning(void)
 {
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	std::uniform_real_distribution<double> randval(-0.02,0.02);
+
 	int i, j, k, l, m;
 
 	//必要なパラメータのチェック
@@ -279,10 +283,10 @@ bool RLLgmnMouse::InitializeRLLGMNLearning(void)
 			for (k = 0; k<NF.state_number; k++) {
 				for (l = 0; l<NF.component_number; l++) {
 					for (m = 0; m<(1 + NF.channel_number*(NF.channel_number + 3) / 2); m++) {
-						NF.weight[i][j][k][l][m]
-							= ((double)rand() / 32768.0 - 0.5) / 50.0;
-						NF.best_weight[i][j][k][l][m]
-							= ((double)rand() / 32768.0 - 0.5) / 50.0;
+						NF.weight[i][j][k][l][m] = randval(mt);
+						NF.best_weight[i][j][k][l][m] = randval(mt);
+						//NF.weight[i][j][k][l][m] = ((double)rand() / 32768.0 - 0.5) / 50.0;
+						//NF.best_weight[i][j][k][l][m] = ((double)rand() / 32768.0 - 0.5) / 50.0;
 					}
 				}
 			}

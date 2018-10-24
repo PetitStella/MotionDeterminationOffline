@@ -24,6 +24,7 @@
 #pragma warning(disable:4996)
 //━クラス用インクルード━━━━━━━━━━━━━━━━━━
 #include <stdio.h>
+#include <random>
 #include <cmath>
 #include <time.h>
 #include <iostream>
