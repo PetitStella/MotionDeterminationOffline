@@ -166,7 +166,7 @@ bool Training(void){
     printf("\tSteps        Evaluate function\n");
     while (!RLL.LearningNetWork()) {
         RLL.GetLearningData(&lerningdata);
-        printf("\t %.1lf %%          J=%lf\r", 100 * double(lerningdata.ta_count) / 1000.0, lerningdata.energy);
+        printf("\t %.1lf %%          J=%e\r", 100 * double(lerningdata.ta_count) / 1000.0, lerningdata.energy);
     }
     printf("\n");
 
