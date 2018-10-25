@@ -3,3 +3,6 @@ cmake-build-debug/
 cmake-build-release/
 .DS_Store
 /.idea/workspace.xml
+Data/
+MotionData/
+Results/
