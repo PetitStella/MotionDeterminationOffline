@@ -2,11 +2,14 @@
 
 CommonClass::CommonClass()
 {
-	motionNum = 0;
+	singleMotionNum = 0;
+	combineMotionNum = 0;
 	channelNum = 0;
 	compNum = 0;
-	dataLength = 0;
-
+	trainDataLength = 0;
+	timeLength = 0;
+	entropyThreshold = 0;
+	forceThreshold = 0;
 }
 
 
@@ -19,10 +22,14 @@ bool CommonClass::LoadStateData(char *fileName)
 		printf("%s can not open.\n", fileName);
 		return false;
 	}
-	fscanf(fp, "%d", &motionNum);
+	fscanf(fp, "%d", &singleMotionNum);
+	fscanf(fp, "%d", &combineMotionNum);
 	fscanf(fp, "%d", &channelNum);
 	fscanf(fp, "%d", &compNum);
-	fscanf(fp, "%d", &dataLength);
+	fscanf(fp, "%d", &trainDataLength);
+	fscanf(fp, "%d", &timeLength);
+	fscanf(fp, "%lf", &entropyThreshold);
+	fscanf(fp, "%lf", &forceThreshold);
 
 	fclose(fp);
 
@@ -39,11 +46,14 @@ bool CommonClass::SaveStateData(char *fileName)
 		printf("%s can not open.\n", fileName);
 		return false;
 	}
-	fprintf(fp, "%d\n", motionNum);
+	fprintf(fp, "%d\n", singleMotionNum);
+	fprintf(fp, "%d\n", combineMotionNum);
 	fprintf(fp, "%d\n", channelNum);
 	fprintf(fp, "%d\n", compNum);
-	fprintf(fp, "%d\n", dataLength);
-
+	fprintf(fp, "%d\n", trainDataLength);
+	fprintf(fp, "%d\n", timeLength);
+	fprintf(fp, "%lf\n", entropyThreshold);
+	fprintf(fp, "%lf\n", forceThreshold);
 
 	fclose(fp);
 

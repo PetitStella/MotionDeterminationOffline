@@ -9,10 +9,14 @@
 class CommonClass
 {
 public:
-	int motionNum;
-	int channelNum;
-	int compNum;
-	int dataLength;
+	int singleMotionNum;	// # of single motions
+	int combineMotionNum;	// # of combined motions
+	int channelNum;			// # of channels
+	int compNum;			// # of components of R-LLGMN
+	int trainDataLength;	// # of train samples
+	int timeLength;			// # of time series samples for R-LLGMN
+	double entropyThreshold;
+	double forceThreshold;
 
 
 	CommonClass();
