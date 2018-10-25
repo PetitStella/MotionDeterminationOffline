@@ -6,6 +6,9 @@
 // Created by Akira Furui
 //================================================================
 
+// TODO: Make development variables for Mac and Win
+// TODO: Refactoring
+
 #include <stdio.h>
 #include <math.h>
 
@@ -14,6 +17,7 @@
 #include "./INCLUDE/R-LlgmnClass.h"
 #include "./INCLUDE/MemoryClass.h"
 #include "./INCLUDE/Common.h"
+#include "./INCLUDE/EnvSelect.h"
 
 #pragma warning(disable:4996)
 
@@ -23,16 +27,16 @@
 
 
 bool Config(void);
+
 bool Training(void);
+
 bool Testing(void);
 
-int main(void)
-{
+int main(void) {
     char select = NULL;
 
-    while (select != 0x1b)
-    {
-        system("cls");
+    while (select != 0x1b) {
+        ClearConsole;
         printf("\n");
         printf("---------------------------------------------------\n");
         printf("         LEARNING EMG PATTERN with R-LLGMN         \n");
@@ -46,22 +50,21 @@ int main(void)
 
         cin >> select;
 
-        switch (select)
-        {
+        switch (select) {
             case '0':
-                system("cls");
+                ClearConsole;
                 Config();
                 break;
             case '1':
-                system("cls");
+                ClearConsole;
                 Training();
                 break;
             case '2':
-                system("cls");
+                ClearConsole;
                 Testing();
                 break;
             default:
-                system("cls");
+                ClearConsole;
                 break;
         }
 
@@ -72,8 +75,7 @@ int main(void)
 
 
 // 学習に必要なパラメータを変更する
-bool Config(void)
-{
+bool Config(void) {
     CommonClass Com;
 
 
@@ -97,7 +99,7 @@ bool Config(void)
 }
 
 
-bool Training(void){
+bool Training(void) {
     MemoryClass<double> Mem;
     CommonClass Com;
     RLLgmnMouse RLL;
@@ -107,7 +109,7 @@ bool Training(void){
     FILE *wfp;
 
     // Load parameters for learning
-    if(!Com.LoadStateData("./state.dat")) return false;
+    if (!Com.LoadStateData("./state.dat")) return false;
 
     char fName[100];
     bool loopFlag = true;
@@ -118,12 +120,12 @@ bool Training(void){
     wfp = fopen("./Data/LearningData.dat", "w");
     printf("\n-----------------------------\n");
     printf(" [Generate Train data]\n");
-    for (int m=0; m < Com.singleMotionNum; m++) {
+    for (int m = 0; m < Com.singleMotionNum; m++) {
         printf("\tLoad: MOTION%d.TXT\n", m + 1);
         counter = 0;
-        sprintf(fName, "./MotionData/MOTION%d.TXT", m+1);
+        sprintf(fName, "./MotionData/MOTION%d.TXT", m + 1);
         if ((rfp = fopen(fName, "r")) == NULL) {
-            printf("Can not open file: MOTION%d.TXT", m+1);
+            printf("Can not open file: MOTION%d.TXT", m + 1);
             return false;
         }
         while (loopFlag) {
@@ -131,15 +133,13 @@ bool Training(void){
                 for (int c = 0; c < Com.channelNum; c++) {
                     fscanf(rfp, "%lf", &tmpData);
                 }
-            }
-            else if ((counter >= 500)&&(counter < (500+Com.trainDataLength))) {
+            } else if ((counter >= 500) && (counter < (500 + Com.trainDataLength))) {
                 for (int c = 0; c < Com.channelNum; c++) {
                     fscanf(rfp, "%lf", &tmpData);
                     fprintf(wfp, "%lf\t", tmpData);
                 }
                 fprintf(wfp, "\n");
-            }
-            else {
+            } else {
                 loopFlag = false;
             }
             counter++;
@@ -196,8 +196,7 @@ bool Training(void){
     return true;
 }
 
-bool Testing(void)
-{
+bool Testing(void) {
     MemoryClass<double> Mem;
     CommonClass Com;
     RLLgmnMouse RLL;
@@ -205,6 +204,8 @@ bool Testing(void)
 
     FILE *rfp;
     FILE *wfp;
+
+    char fName[100];
 
     double *inputData;
     double *testData;
@@ -220,7 +221,7 @@ bool Testing(void)
     int motion_count = 0;
 
     // Load parameters for learning
-    if(!Com.LoadStateData("./state.dat")) return false;
+    if (!Com.LoadStateData("./state.dat")) return false;
 
     allMotionNum = Com.singleMotionNum + Com.combineMotionNum;
     inputData = Mem.matrix1_alloc(Com.channelNum);
@@ -229,17 +230,17 @@ bool Testing(void)
     vector = Mem.matrix1_alloc(Com.singleMotionNum);
 
     // Give initial values for time series data
-    for(int i=0; i<Com.timeLength; i++){
-        for(int j=0; j<Com.channelNum; j++){
+    for (int i = 0; i < Com.timeLength; i++) {
+        for (int j = 0; j < Com.channelNum; j++) {
             ADdata[i][j] = 0.0001;
         }
     }
 
-    for(int i=0; i<Com.channelNum; i++){
+    for (int i = 0; i < Com.channelNum; i++) {
         inputData[i] = 0.0;
         testData[i] = 0.0;
     }
-    for(int i=0; i<Com.singleMotionNum; i++){
+    for (int i = 0; i < Com.singleMotionNum; i++) {
         vector[i] = 0.0;
     }
 
@@ -252,16 +253,16 @@ bool Testing(void)
     RLL.SetStateNumber(1);
     RLL.SetTeacherNumber(Com.singleMotionNum);
 
-    if(!RLL.InitializeRLLGMN()){
+    if (!RLL.InitializeRLLGMN()) {
         printf("Error! in initializing R-LLGMN\n");
         return false;
     }
 
-    if(!RLL.LoadWeight("./Data/Weight")){
+    if (!RLL.LoadWeight("./Data/Weight")) {
         printf("Error! in loading weights\n");
         return false;
     }
-    if(!RLL.InitializeOutput()){
+    if (!RLL.InitializeOutput()) {
         printf("Error! in initializing R-LLGMN outputs\n");
         return false;
     }
@@ -286,7 +287,7 @@ bool Testing(void)
 
     T_vector = Mem.matrix2_alloc(allMotionNum, Com.singleMotionNum);
     output_vector = Mem.matrix1_alloc(allMotionNum);
-    modifying_vector = Mem.matrix2_alloc(allMotionNum+1, allMotionNum);
+    modifying_vector = Mem.matrix2_alloc(allMotionNum + 1, allMotionNum);
     similarity = Mem.matrix1_alloc(allMotionNum);
     modified_similarity = Mem.matrix1_alloc(allMotionNum);
 
@@ -294,87 +295,100 @@ bool Testing(void)
 
     printf("Load files...\n\n");
     // File loading
-    for(int i=0; i<allMotionNum; i++){
-        for(int j=0; j<Com.singleMotionNum; j++){
+    for (int i = 0; i < allMotionNum; i++) {
+        for (int j = 0; j < Com.singleMotionNum; j++) {
             T_vector[i][j] = 0.0;
         }
     }
 
-    if((rfp = fopen("./Data/Teach", "rt")) == NULL){
+    if ((rfp = fopen("./Data/Teach", "rt")) == NULL) {
         printf("Error in loading [Teach]\n");
         return false;
     }
-    for(int i=0; i < allMotionNum; i++){
-        for(int j=0; j < Com.singleMotionNum; j++) {
+    for (int i = 0; i < allMotionNum; i++) {
+        for (int j = 0; j < Com.singleMotionNum; j++) {
             fscanf(rfp, "%lf", &T_vector[i][j]);
         }
     }
     fclose(rfp);
     printf("./Data/Teach  Loaded!\n");
 
-    for(int i=0; i < allMotionNum + 1; i++){
-        for(int j=0; j < allMotionNum; j++){
+    for (int i = 0; i < allMotionNum + 1; i++) {
+        for (int j = 0; j < allMotionNum; j++) {
             modifying_vector[i][j] = 0.0;
         }
     }
 
-    if((rfp = fopen("./Data/Modify", "rt")) == NULL){
+    if ((rfp = fopen("./Data/Modify", "rt")) == NULL) {
         printf("Error in loading [Modify]\n");
         return false;
     }
-    for(int i=0; i < allMotionNum + 1; i++){
-        for(int j=0; j < allMotionNum; j++){
+    for (int i = 0; i < allMotionNum + 1; i++) {
+        for (int j = 0; j < allMotionNum; j++) {
             fscanf(rfp, "%lf\t", &modifying_vector[i][j]);
         }
     }
     fclose(rfp);
     printf("./Data/Modify  Loaded!\n");
 
-    wfp = fopen("./Results/result.dat", "w");
+
+
+    int read_motion_num;
+    int read_trial_num;
+    printf("Motion number: ");
+    scanf("%d", &read_motion_num);
+    printf("Trial number: ");
+    scanf("%d", &read_trial_num);
+
+    sprintf(fName, "./Data/Testing/識別%d回目/動作%d/Check/alpha.dat", read_trial_num, read_motion_num);
+    if((rfp = fopen(fName, "r")) == NULL){
+        printf("No input file\n");
+        return false;
+    }
+    sprintf(fName, "./Results/m%d_%d.dat", read_motion_num,read_trial_num);
+    wfp = fopen(fName, "w");
     fprintf(wfp, "combined_motion\tsingle_motion\tforce");
-    for(int i=0; i<Com.singleMotionNum; i++){
-        fprintf(wfp, "\tPostProb_M%d", i+1);
+    for (int i = 0; i < Com.singleMotionNum; i++) {
+        fprintf(wfp, "\tPostProb_M%d", i + 1);
     }
     fprintf(wfp, "\n");
-
-    rfp = fopen("./Data/Testing/alpha.dat", "r");
     // Start testing
     printf("Start motion determination!\n");
-    while(fscanf(rfp, "%lf", &inputData[0]) != EOF){
-        for(int i=1; i<Com.channelNum; i++){
-            fscanf(rfp, "%lf",&inputData[i]);
+    while (fscanf(rfp, "%lf", &inputData[0]) != EOF) {
+        for (int i = 1; i < Com.channelNum; i++) {
+            fscanf(rfp, "%lf", &inputData[i]);
         }
 
-        for(int i=1; i<Com.timeLength; i++) {
-            for(int j=0; j<Com.channelNum; j++) {
-                ADdata[Com.timeLength-i][j] = ADdata[Com.timeLength-1-i][j];
+        for (int i = 1; i < Com.timeLength; i++) {
+            for (int j = 0; j < Com.channelNum; j++) {
+                ADdata[Com.timeLength - i][j] = ADdata[Com.timeLength - 1 - i][j];
             }
         }
 
         double sum_inputData = 0.0;
-        for(int i=0; i<Com.channelNum; i++){
+        for (int i = 0; i < Com.channelNum; i++) {
             sum_inputData += inputData[i];
-            force = sum_inputData/(double)Com.channelNum;
+            force = sum_inputData / (double) Com.channelNum;
         }
-        for(int i=0; i<Com.channelNum; i++){
-            if(sum_inputData == 0.0){
+        for (int i = 0; i < Com.channelNum; i++) {
+            if (sum_inputData == 0.0) {
                 testData[i] = 0.0;
-            }else{
-                testData[i] = inputData[i]/sum_inputData;
+            } else {
+                testData[i] = inputData[i] / sum_inputData;
             }
         }
 
-        for(int i=0; i<Com.channelNum; i++){
+        for (int i = 0; i < Com.channelNum; i++) {
             ADdata[0][i] = testData[i];
         }
 
-        for(int i=0; i<Com.timeLength; i++){
+        for (int i = 0; i < Com.timeLength; i++) {
             RLL.HMN_FC(i, ADdata);
         }
         RLL.GetPosterioriProbability(vector);
         RLL.InitializeOutput();
         // Estimate motion
-        if(force > Com.forceThreshold) {
+        if (force > Com.forceThreshold) {
             double P_max = 0.0;
             for (int i = 0; i < Com.singleMotionNum; i++) {
                 if (P_max < vector[i]) {
@@ -392,7 +406,7 @@ bool Testing(void)
             } else {
                 decide_motion = pre_decide_motion;  // suspend
             }
-        }else{
+        } else {
             estimate_motion = 0;
             decide_motion = 0;
             motion_count = 0;
@@ -401,44 +415,43 @@ bool Testing(void)
         pre_estimate_motion = estimate_motion;
 
         // Motion determination based on Motion generation model
-        // TODO: motion determination part has bug
-        if(force > 100*Com.forceThreshold) {
+        if (force > Com.forceThreshold) {
             // Calculate: inter vector distance
             for (int i = 0; i < allMotionNum; i++) {
                 double tmp = 0.0;
-                for (int j = 0; j < Com.singleMotionNum; i++) {
+                for (int j = 0; j < Com.singleMotionNum; j++) {
                     tmp += (T_vector[i][j] - vector[j]) * (T_vector[i][j] - vector[j]);
                 }
                 output_vector[i] = sqrt(tmp);
             }
             // Calculate: similarity & modified similarity
-            for(int i=0; i<allMotionNum; i++){
-                similarity[i] = 1.0 - output_vector[i]/sqrt(2.0);
-                modified_similarity[i] = similarity[i]*modifying_vector[token][i];
+            for (int i = 0; i < allMotionNum; i++) {
+                similarity[i] = 1.0 - output_vector[i] / sqrt(2.0);
+                modified_similarity[i] = similarity[i] * modifying_vector[token][i];
             }
-            max_modified_similarity = 0;
-            classified_combined_motion = 0;
-            for(int i=0; i<allMotionNum; i++){
-                if(modified_similarity[i] > max_modified_similarity){
+            max_modified_similarity = 0;        // Initialized
+            classified_combined_motion = 0;     // Initialized
+            for (int i = 0; i < allMotionNum; i++) {
+                if (modified_similarity[i] > max_modified_similarity) {
                     max_modified_similarity = modified_similarity[i];
-                    classified_combined_motion = i+1;
+                    classified_combined_motion = i + 1;
                 }
             }
             // Move: token
-            if(classified_combined_motion == pre_classified_combined_motion){
+            if (classified_combined_motion == pre_classified_combined_motion) {
                 token_count++;
-                if(token_count < TOKEN_COUNT){
+                if (token_count < TOKEN_COUNT) {
                     token = pre_token;
-                }else {
+                } else {
                     token = classified_combined_motion;
                 }
-            }else{
+            } else {
                 token = pre_token;
                 token_count = 0;
             }
-            if(token == pre_token) {
+            if (token == pre_token) {
                 motion_count_comb++;
-                if(motion_count_comb < CONTROL_COUNT_COMBINE)
+                if (motion_count_comb < CONTROL_COUNT_COMBINE)
                     decided_combined_motion = pre_decided_combined_motion;  // stay
                 else
                     decided_combined_motion = token;                        // transit
@@ -446,7 +459,7 @@ bool Testing(void)
                 decided_combined_motion = pre_decided_combined_motion;      // stay
                 motion_count_comb = 0;
             }
-        }else{
+        } else {
             token = 0;
             motion_count_comb = 0;
             token_count = 0;
@@ -459,7 +472,7 @@ bool Testing(void)
         pre_token = token;
 
         fprintf(wfp, "%d\t%d\t%lf", decided_combined_motion, decide_motion, force);
-        for(int i=0; i<Com.singleMotionNum; i++){
+        for (int i = 0; i < Com.singleMotionNum; i++) {
             fprintf(wfp, "\t%lf", vector[i]);
         }
         fprintf(wfp, "\n");
