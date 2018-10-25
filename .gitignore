@@ -1,3 +1,4 @@
 #Ignore
 cmake-build-debug/
 .DS_Store
+/.idea/workspace.xml
